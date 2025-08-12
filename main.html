@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Football Pingpong Simulation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0b3d91, #1a8cff);
+      font-family: 'Montserrat', sans-serif;
+      color: #f0f0f0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #menu {
+      background: linear-gradient(145deg, #192a56, #1f3c88);
+      padding: 40px 60px;
+      border-radius: 24px;
+      box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.6),
+        inset 0 0 30px rgba(255, 255, 255, 0.15);
+      text-align: center;
+      width: 360px;
+      animation: fadeInScale 0.7s ease forwards;
+    }
+
+    @keyframes fadeInScale {
+      0% {
+        opacity: 0;
+        transform: scale(0.85);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    #menu h2 {
+      font-size: 2.2rem;
+      margin-bottom: 24px;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 8px #0f67ff;
+    }
+
+    label {
+      display: block;
+      margin: 20px 0 8px 0;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-shadow: 0 0 5px #093770;
+    }
+
+    select {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1.1rem;
+      border-radius: 14px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      background: linear-gradient(145deg, #e8ebf3, #cfd4db);
+      color: #222;
+      box-shadow:
+        inset 2px 2px 6px rgba(255,255,255,0.8),
+        inset -2px -2px 6px rgba(0,0,0,0.2);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3csvg%20width%3d%2212%22%20height%3d%227%22%20viewBox%3d%220%200%2012%207%22%20xmlns%3d%22http%3a//www.w3.org/2000/svg%22%3e%3cpath%20d%3d%22M1%200l5%205%205-5%22%20stroke%3d%22%23222%22%20stroke-width%3d%222%22%20fill%3d%22none%22%20fill-rule%3d%22evenodd%22/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 12px 7px;
+    }
+    select:hover, select:focus {
+      background: linear-gradient(145deg, #d0d4db, #a9afbb);
+      box-shadow:
+        inset 3px 3px 8px rgba(255,255,255,0.9),
+        inset -3px -3px 8px rgba(0,0,0,0.3);
+    }
+
+    button {
+      margin-top: 36px;
+      padding: 14px 0;
+      width: 100%;
+      font-size: 1.3rem;
+      font-weight: 700;
+      border-radius: 24px;
+      border: none;
+      background: #0ff;
+      color: #07374e;
+      box-shadow:
+        0 6px 20px #0ff,
+        inset 0 -4px 10px #07c;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: background 0.4s ease, color 0.4s ease;
+      user-select: none;
+    }
+    button:hover {
+      background: #07c;
+      color: #0ff;
+      box-shadow:
+        0 8px 25px #0ff,
+        inset 0 -4px 10px #0ff;
+    }
+
+    /* Game container and scoreboard */
+
+    #gameContainer {
+      display: none;
+      position: relative;
+      width: 850px;
+      height: 600px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      background: #0c2233;
+      border-radius: 24px;
+      box-shadow: 0 0 50px #0ff;
+      padding: 30px;
+      user-select: none;
+    }
+#pauseBtn {
+  width: 180px;
+  padding: 14px 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border-radius: 24px;
+  border: none;
+  background: #0ff;
+  color: #07374e;
+  box-shadow:
+    0 6px 20px #0ff,
+    inset 0 -4px 10px #07c;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  user-select: none;
+  transition: background 0.4s ease, color 0.4s ease;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#leftPanel {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: center;    /* center horizontally */
+  gap: 15px;              /* space between pause button and scoreboard */
+}
+
+#pauseBtn {
+  padding: 14px 0;
+  width: 180px; /* match scoreboard width */
+  font-size: 1.3rem;
+  font-weight: 700;
+  border-radius: 24px;
+  border: none;
+  background: #0ff;
+  color: #07374e;
+  box-shadow:
+    0 6px 20px #0ff,
+    inset 0 -4px 10px #07c;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  user-select: none;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+#pauseBtn:hover {
+  background: #07c;
+  color: #0ff;
+  box-shadow:
+    0 8px 25px #0ff,
+    inset 0 -4px 10px #0ff;
+}
+
+
+#pauseBtn:hover {
+  background: #07c;
+  color: #0ff;
+  box-shadow:
+    0 8px 25px #0ff,
+    inset 0 -4px 10px #0ff;
+}
+
+
+    #scoreboard {
+      width: 180px;
+      background: linear-gradient(145deg, #2b4380, #1b2d5a);
+      border-radius: 20px;
+      box-shadow:
+        inset 2px 2px 8px rgba(255,255,255,0.15),
+        inset -2px -2px 10px rgba(0,0,0,0.9);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #dce6f1;
+      font-weight: 700;
+      font-size: 1.3rem;
+      text-shadow: 0 0 8px #0ff;
+      user-select: none;
+      gap: 24px;
+    }
+
+    .team-name {
+      font-size: 1.4rem;
+      letter-spacing: 1.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+    }
+
+    .color-block {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 10px rgba(0,0,0,0.7);
+    }
+
+    #score {
+      font-size: 4rem;
+      letter-spacing: 6px;
+      color: #0ff;
+      text-shadow:
+        0 0 15px #0ff,
+        0 0 30px #0ff;
+    }
+
+    #timer {
+      font-size: 3.6rem;
+      font-weight: 800;
+      color: #06c;
+      text-shadow:
+        0 0 10px #0ff,
+        0 0 20px #06c;
+      user-select: none;
+      letter-spacing: 3px;
+    }
+
+    canvas {
+      background: linear-gradient(135deg, #287028, #2a7d2a);
+      border-radius: 16px;
+      box-shadow:
+        0 0 25px 8px rgba(0, 255, 255, 0.15),
+        inset 0 0 30px 10px #1b521b;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+/* Replace your existing #fulltimePopup styles with this: */
+#fulltimePopup {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  color: #00ffff;
+  font-weight: 900;
+  font-size: 5.5rem;
+  text-align: center;
+  padding-top: 140px;
+  letter-spacing: 6px;
+  user-select: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  text-shadow:
+    0 0 20px #00ffff,
+    0 0 40px #00ffff,
+    0 0 60px #00ffff,
+    0 0 90px #00ffff,
+    0 0 120px #00ffff;
+  border: 4px solid #00ffff;
+  border-radius: 36px;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: auto;
+}
+
+#fulltimePopup #finalScore {
+  font-size: 4.5rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  width: 100%;
+  color: #00ffff;
+  text-shadow:
+    0 0 25px #00ffff,
+    0 0 50px #00ffff;
+}
+
+#playAgainBtn {
+  font-size: 2.5rem;
+  padding: 18px 60px;
+  border-radius: 48px;
+  border: 2.5px solid #00ffff;
+  background: transparent;
+  color: #00ffff;
+  box-shadow:
+    0 0 15px #00ffff,
+    inset 0 0 10px #00ffff;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+  user-select: none;
+  font-weight: 900;
+  font-family: 'Montserrat', sans-serif;
+}
+
+#playAgainBtn:hover {
+  background: #00ffff;
+  color: #002f3f;
+  box-shadow:
+    0 0 35px #00ffff,
+    inset 0 0 20px #00ffff;
+}
+
+
+    #finalScore {
+      font-size: 3.5rem;
+      letter-spacing: 2px;
+      width: 100%;
+    }
+
+    #playAgainBtn {
+      font-size: 2rem;
+      padding: 16px 40px;
+      border-radius: 36px;
+      border: none;
+      background: #0ff;
+      color: #07374e;
+      box-shadow:
+        0 6px 20px #0ff,
+        inset 0 -4px 10px #07c;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: background 0.4s ease, color 0.4s ease;
+      user-select: none;
+    }
+    #playAgainBtn:hover {
+      background: #07c;
+      color: #0ff;
+      box-shadow:
+        0 8px 25px #0ff,
+        inset 0 -4px 10px #0ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="menu">
+    <h2>Choose Your Teams</h2>
+<label for="homeColor">Home Team Color</label>
+<select id="homeColor" aria-label="Home Team Color">
+  <option value="red">Red</option>
+  <option value="blue" selected>Blue</option>
+  <option value="green">Green</option>
+  <option value="yellow">Yellow</option>
+  <option value="purple">Purple</option>
+  <option value="white">White</option>
+  <option value="black">Black</option>
+  <option value="pink">Pink</option>
+  <option value="orange">Orange</option>
+  <option value="cyan">Cyan</option>
+  <option value="lime">Lime</option>
+  <option value="brown">Brown</option>
+</select>
+
+<label for="awayColor">Away Team Color</label>
+<select id="awayColor" aria-label="Away Team Color">
+  <option value="red">Red</option>
+  <option value="blue">Blue</option>
+  <option value="green">Green</option>
+  <option value="yellow">Yellow</option>
+  <option value="purple" selected>Purple</option>
+  <option value="white">White</option>
+  <option value="black">Black</option>
+  <option value="pink">Pink</option>
+  <option value="orange">Orange</option>
+  <option value="cyan">Cyan</option>
+  <option value="lime">Lime</option>
+  <option value="brown">Brown</option>
+</select>
+
+
+    <button id="startBtn">Confirm & Start Match</button>
+  </div>
+
+<div id="gameContainer" role="main" aria-label="Football Match Simulation">
+
+  <div id="leftPanel">
+    <button id="pauseBtn" aria-pressed="false" aria-label="Pause Game">Pause</button>
+    <div id="scoreboard" aria-live="polite">
+      <div class="team-name" id="homeName"><div class="color-block" id="homeColorBlock"></div> Blue</div>
+      <div id="score">0 - 0</div>
+      <div class="team-name" id="awayName"><div class="color-block" id="awayColorBlock"></div> Purple</div>
+      <div id="timer" aria-live="polite" aria-atomic="true">1'</div>
+    </div>
+  </div>
+
+  <canvas id="field" width="600" height="600" aria-label="Football Field"></canvas>
+
+</div>
+
+
+
+  <div id="fulltimePopup" role="dialog" aria-modal="true" aria-labelledby="fulltimeTitle" aria-describedby="finalScoreText">
+    <div id="fulltimeTitle">FULLTIME!</div>
+    <div id="finalScoreText" style="font-size: 3rem; margin-top: 10px;">Final Score</div>
+    <div id="finalScore">0 - 0</div>
+    <button id="playAgainBtn" aria-label="Play Again">Play Again</button>
+  </div>
+
+<script>
+(() => {
+  const menu = document.getElementById('menu');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const gameContainer = document.getElementById('gameContainer');
+  const scoreboard = document.getElementById('scoreboard');
+  const homeName = document.getElementById('homeName');
+  const awayName = document.getElementById('awayName');
+  const homeColorBlock = document.getElementById('homeColorBlock');
+  const awayColorBlock = document.getElementById('awayColorBlock');
+  const scoreDisplay = document.getElementById('score');
+  const timerDisplay = document.getElementById('timer');
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+  const ballImage = new Image();
+  ballImage.src = 'https://static.vecteezy.com/system/resources/thumbnails/013/362/736/small/football-soccer-transparent-free-png.png';
+  const fulltimePopup = document.getElementById('fulltimePopup');
+  const finalScoreDisplay = document.getElementById('finalScore');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+
+  const width = canvas.width;
+  const height = canvas.height;
+  const goalWidth = 140;
+  const goalHeight = 90;
+  const shirtRadius = 18;
+  const ballRadius = 15;
+
+  let colors = {
+    home: 'blue',
+    away: 'purple'
+  };
+
+  let score = {
+    home: 0,
+    away: 0
+  };
+
+  let players = [];
+
+  let ball = {
+    x: width / 2,
+    y: height / 2,
+    vx: 0,
+    vy: 0,
+  };
+
+  let matchDuration = 45 * 1000; // 45 seconds real time
+  let matchStartTime = null;
+  let matchEnded = false;
+  let isPaused = false;
+  let animationFrameId = null;
+
+  const celebrationAudio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_98ca25cc02.mp3?filename=celebration-1-6374.mp3');
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function createPlayers() {
+    players = [];
+    players.push({x: width / 2, y: goalHeight / 2 + 10, vx: 3, vy: 3, team: 'away', isGK: true});
+    players.push({x: 110, y: 180, vx: 3.5, vy: 3, team: 'away', isGK: false});
+    players.push({x: 220, y: 130, vx: -3, vy: 3.5, team: 'away', isGK: false});
+    players.push({x: 330, y: 180, vx: -3.5, vy: 2.5, team: 'away', isGK: false});
+    players.push({x: width / 2, y: height - goalHeight / 2 - 10, vx: -3, vy: -3, team: 'home', isGK: true});
+    players.push({x: 110, y: height - 180, vx: -3.5, vy: -3, team: 'home', isGK: false});
+    players.push({x: 220, y: height - 130, vx: 3, vy: -3.5, team: 'home', isGK: false});
+    players.push({x: 330, y: height - 180, vx: 3.5, vy: -2.5, team: 'home', isGK: false});
+  }
+
+  function drawFansBackground() {
+    const rows = 15;
+    const cols = 30;
+    const dotSize = 8;
+    const startX = (width - cols * dotSize) / 2;
+    const startY = (height - rows * dotSize) / 2;
+
+    const colorsPool = ['#ff0033', '#ff6600', '#ffff00', '#0066cc', '#00cc44', '#cc0033', '#ffffff', '#333333'];
+
+    for(let r = 0; r < rows; r++) {
+      for(let c = 0; c < cols; c++) {
+        const flicker = 0.6 + 0.4 * Math.sin(Date.now()/200 + r*3 + c*7);
+        ctx.fillStyle = colorsPool[(r*c + r + c) % colorsPool.length];
+        ctx.globalAlpha = flicker;
+        ctx.beginPath();
+        ctx.arc(startX + c * dotSize + dotSize/2, startY + r * dotSize + dotSize/2, dotSize/3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawField() {
+    const grassGradient = ctx.createLinearGradient(0, 0, 0, height);
+    grassGradient.addColorStop(0, '#287028');
+    grassGradient.addColorStop(0.5, '#2a7d2a');
+    grassGradient.addColorStop(1, '#287028');
+    ctx.fillStyle = grassGradient;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    for(let x = 0; x < width; x += 20) {
+      ctx.fillRect(x, 0, 10, height);
+    }
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = 'rgba(255,255,255,0.3)';
+    ctx.shadowBlur = 8;
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, height);
+    ctx.moveTo(width, 0);
+    ctx.lineTo(width, height);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo((width - goalWidth)/2, 0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo((width + goalWidth)/2, 0);
+    ctx.lineTo(width, 0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    ctx.lineTo((width - goalWidth)/2, height);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo((width + goalWidth)/2, height);
+    ctx.lineTo(width, height);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+  }
+
+  function drawPlayer(p) {
+    ctx.beginPath();
+    ctx.fillStyle = p.team === 'home' ? colors.home : colors.away;
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 5;
+    ctx.arc(p.x, p.y, shirtRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Shirt stripes
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.x - shirtRadius / 2, p.y - shirtRadius / 3);
+    ctx.lineTo(p.x + shirtRadius / 2, p.y - shirtRadius / 3);
+    ctx.moveTo(p.x - shirtRadius / 3, p.y + shirtRadius / 3);
+    ctx.lineTo(p.x + shirtRadius / 3, p.y + shirtRadius / 3);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+  }
+
+  // Draw classic football pattern on ball
+function drawBall() {
+  const imgSize = ballRadius * 2;
+  ctx.drawImage(ballImage, ball.x - ballRadius, ball.y - ballRadius, imgSize, imgSize);
+}
+
+  function updateBall() {
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+
+    if(ball.x - ballRadius < 0) {
+      ball.x = ballRadius;
+      ball.vx = -ball.vx * 0.9;
+    }
+    if(ball.x + ballRadius > width) {
+      ball.x = width - ballRadius;
+      ball.vx = -ball.vx * 0.9;
+    }
+
+    // Top goal check (away goal)
+    if(ball.y - ballRadius < 10) {
+      if(ball.x > width/2 - goalWidth/2 && ball.x < width/2 + goalWidth/2) {
+        score.home++;
+        resetBall('down');
+      } else {
+        ball.y = ballRadius + 10;
+        ball.vy = -ball.vy * 0.9;
+      }
+    }
+
+    // Bottom goal check (home goal)
+    if(ball.y + ballRadius > height - 10) {
+      if(ball.x > width/2 - goalWidth/2 && ball.x < width/2 + goalWidth/2) {
+        score.away++;
+        resetBall('up');
+      } else {
+        ball.y = height - ballRadius - 10;
+        ball.vy = -ball.vy * 0.9;
+      }
+    }
+  }
+
+  function resetBall(direction) {
+    ball.x = width / 2;
+    ball.y = height / 2;
+    const speed = 6;
+    ball.vx = (Math.random() - 0.5) * speed;
+    ball.vy = direction === 'down' ? speed : -speed;
+  }
+
+  function checkPlayerBallCollision(p) {
+    const dx = ball.x - p.x;
+    const dy = ball.y - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < ballRadius + shirtRadius) {
+      const angle = Math.atan2(dy, dx);
+      const speed = Math.min(Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) + 2, 12);
+      ball.vx = Math.cos(angle) * speed;
+      ball.vy = Math.sin(angle) * speed;
+      ball.x = p.x + Math.cos(angle) * (ballRadius + shirtRadius + 1);
+      ball.y = p.y + Math.sin(angle) * (ballRadius + shirtRadius + 1);
+    }
+  }
+
+  function updatePlayers() {
+    players.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Keep GK inside goal box
+      if (p.isGK) {
+        if (p.team === 'home') {
+          if (p.x < width / 2 - goalWidth / 2 + shirtRadius) { p.x = width / 2 - goalWidth / 2 + shirtRadius; p.vx = -p.vx; }
+          if (p.x > width / 2 + goalWidth / 2 - shirtRadius) { p.x = width / 2 + goalWidth / 2 - shirtRadius; p.vx = -p.vx; }
+          if (p.y < height - goalHeight + shirtRadius) { p.y = height - goalHeight + shirtRadius; p.vy = -p.vy; }
+          if (p.y > height - shirtRadius - 10) { p.y = height - shirtRadius - 10; p.vy = -p.vy; }
+        } else {
+          if (p.x < width / 2 - goalWidth / 2 + shirtRadius) { p.x = width / 2 - goalWidth / 2 + shirtRadius; p.vx = -p.vx; }
+          if (p.x > width / 2 + goalWidth / 2 - shirtRadius) { p.x = width / 2 + goalWidth / 2 - shirtRadius; p.vx = -p.vx; }
+          if (p.y > goalHeight - shirtRadius - 10) { p.y = goalHeight - shirtRadius - 10; p.vy = -p.vy; }
+          if (p.y < shirtRadius + 10) { p.y = shirtRadius + 10; p.vy = -p.vy; }
+        }
+      } else {
+        if (p.x < shirtRadius) { p.x = shirtRadius; p.vx = -p.vx; }
+        if (p.x > width - shirtRadius) { p.x = width - shirtRadius; p.vx = -p.vx; }
+        if (p.y < goalHeight + shirtRadius) { p.y = goalHeight + shirtRadius; p.vy = -p.vy; }
+        if (p.y > height - goalHeight - shirtRadius) { p.y = height - goalHeight - shirtRadius; p.vy = -p.vy; }
+      }
+    });
+  }
+
+  function handlePlayerCollision(p1, p2) {
+    const dx = p1.x - p2.x;
+    const dy = p1.y - p2.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 2 * shirtRadius) {
+      const angle = Math.atan2(dy, dx);
+      const overlap = 2 * shirtRadius - dist;
+
+      p1.x += Math.cos(angle) * overlap / 2;
+      p1.y += Math.sin(angle) * overlap / 2;
+      p2.x -= Math.cos(angle) * overlap / 2;
+      p2.y -= Math.sin(angle) * overlap / 2;
+
+      // Swap velocities to reduce jitter
+      const tempVx = p1.vx;
+      const tempVy = p1.vy;
+      p1.vx = p2.vx;
+      p1.vy = p2.vy;
+      p2.vx = tempVx;
+      p2.vy = tempVy;
+    }
+  }
+
+  function updateScoreboard() {
+    homeColorBlock.style.backgroundColor = colors.home;
+    awayColorBlock.style.backgroundColor = colors.away;
+    homeName.innerHTML = `<div class="color-block" style="background:${colors.home}"></div> ${capitalize(colors.home)}`;
+    awayName.innerHTML = `<div class="color-block" style="background:${colors.away}"></div> ${capitalize(colors.away)}`;
+    scoreDisplay.textContent = `${score.home} - ${score.away}`;
+  }
+
+  function updateTimer() {
+    if (!matchStartTime) return;
+    const elapsed = Date.now() - matchStartTime;
+
+    if (elapsed >= matchDuration) {
+      timerDisplay.textContent = '90\'';
+      endMatch();
+    } else {
+      // timer from 1' to 89' over 45 seconds
+      const minute = 1 + Math.floor((elapsed / matchDuration) * 89);
+      timerDisplay.textContent = `${minute}'`;
+    }
+  }
+
+  function endMatch() {
+    if(matchEnded) return;
+    matchEnded = true;
+    cancelAnimationFrame(animationFrameId);
+
+    celebrationAudio.currentTime = 0;
+    celebrationAudio.play();
+
+    finalScoreDisplay.textContent = `${capitalize(colors.home)} ${score.home} - ${score.away} ${capitalize(colors.away)}`;
+    fulltimePopup.style.display = 'flex';
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+
+    drawFansBackground();
+    drawField();
+
+    players.forEach(drawPlayer);
+    drawBall();
+  }
+
+  function update() {
+    if (matchEnded) return;
+    if (isPaused) return
+
+    updatePlayers();
+
+    for (let i = 0; i < players.length; i++) {
+      for (let j = i + 1; j < players.length; j++) {
+        handlePlayerCollision(players[i], players[j]);
+      }
+    }
+
+    updateBall();
+
+    players.forEach(checkPlayerBallCollision);
+
+    updateScoreboard();
+    updateTimer();
+
+    draw();
+    animationFrameId = requestAnimationFrame(update);
+  }
+
+  function startGame() {
+    const homeSel = document.getElementById('homeColor').value;
+    const awaySel = document.getElementById('awayColor').value;
+
+    if (homeSel === awaySel) {
+      alert("Home and Away colors can't be the same!");
+      return;
+    }
+    colors.home = homeSel;
+    colors.away = awaySel;
+
+    score.home = 0;
+    score.away = 0;
+    matchEnded = false;
+    matchStartTime = Date.now();
+
+    createPlayers();
+    resetBall('down');
+
+    menu.style.display = 'none';
+    fulltimePopup.style.display = 'none';
+    gameContainer.style.display = 'flex';
+
+    update();
+  }
+
+  playAgainBtn.addEventListener('click', () => {
+    fulltimePopup.style.display = 'none';
+    menu.style.display = 'block';
+  });
+
+  document.getElementById('startBtn').addEventListener('click', startGame);
+
+pauseBtn.addEventListener('click', () => {
+  if (matchEnded) return; // no pause if game ended
+
+  isPaused = !isPaused;
+
+  if (isPaused) {
+    pauseBtn.textContent = 'Resume';
+    pauseBtn.setAttribute('aria-pressed', 'true');
+  } else {
+    pauseBtn.textContent = 'Pause';
+    pauseBtn.setAttribute('aria-pressed', 'false');
+    animationFrameId = requestAnimationFrame(update);
+  }
+});
+
+})();
+</script>
+
+</body>
+</html>
